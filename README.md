@@ -4,8 +4,8 @@ GridExport is a Data Component add-on for Vaadin 8.
 
 ## Authors
 
-(https://github.com/mletenay/tableexport-for-vaadin) - Inherited from
-(https://github.com/jnash67/tableexport-for-vaadin) - Originally Inherited from
+* https://github.com/mletenay/tableexport-for-vaadin - Inherited from
+* https://github.com/jnash67/tableexport-for-vaadin - Originally Inherited from
 
 ## Overview
 
