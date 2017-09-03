@@ -30,4 +30,4 @@ GridExport is a Data Component add-on for Vaadin 8.
 
 ## License
 
-Add-on is distributed under Apache License 2.0. For license terms, see LICENSE.txt.
+Add-on is distributed under Apache License 2.0. For license terms, see LICENSE.
