@@ -185,6 +185,7 @@ public class ExcelExport<T> extends GridExport<T> {
 
     @Override
     public InputStream getInputStream() {
+        excludeCollapsedColumns();
         convertGrid();
 
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
