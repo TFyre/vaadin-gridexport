@@ -7,7 +7,7 @@ package com.tfyre.vaadin.gridexport;
 
 /**
  *
- * @author Francois Steyn - TFyreIT (PTY) LTD <tfyre@tfyre.co.za>
+ * @author Francois Steyn - TFyreIT (PTY) LTD {@literal <tfyre@tfyre.co.za>}
  */
 public class VersionHelper {
 

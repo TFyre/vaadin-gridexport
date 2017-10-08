@@ -8,32 +8,19 @@
     </parent>
     <artifactId>vaadin-gridexport</artifactId>
     <packaging>jar</packaging>
-    <properties>
-        <vaadin.version>8.1.3</vaadin.version>
-        <vaadin.plugin.version>${vaadin.version}</vaadin.plugin.version>
-    </properties>
     <name>vaadin-gridexport</name>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.vaadin</groupId>
-                <artifactId>vaadin-bom</artifactId>
-                <version>${vaadin.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-server</artifactId>
+            <version>[8.1.0,8.2)</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.16</version>
+            <version>[3.16,]</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

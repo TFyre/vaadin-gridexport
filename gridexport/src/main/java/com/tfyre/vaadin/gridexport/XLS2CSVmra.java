@@ -34,7 +34,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Francois Steyn - TFyreIT (PTY) LTD <tfyre@tfyre.co.za>
+ * @author Francois Steyn - TFyreIT (PTY) LTD {@literal <tfyre@tfyre.co.za>}
  */
 public class XLS2CSVmra implements HSSFListener, Serializable {
 
@@ -77,7 +77,7 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
     private boolean outputNextStringRecord;
 
     /**
-     * Creates a new XLS -> CSV converter
+     * Creates a new XLS to CSV converter
      *
      * @param fs The POIFSFileSystem to process
      * @param output The PrintStream to output the CSV to
@@ -91,13 +91,13 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
     }
 
     /**
-     * Creates a new XLS -> CSV converter
+     * Creates a new XLS to CSV converter
      *
      * @param filename The file to process
      * @param minColumns The minimum number of columns to output, or -1 for no
      * minimum
-     * @throws IOException
-     * @throws FileNotFoundException
+     * @throws IOException from upstream
+     * @throws FileNotFoundException from upstream
      */
     public XLS2CSVmra(final String filename, final int minColumns) throws IOException,
             FileNotFoundException {
@@ -106,6 +106,7 @@ public class XLS2CSVmra implements HSSFListener, Serializable {
 
     /**
      * Initiates the processing of the XLS file to CSV
+     * @throws java.io.IOException from upstream
      */
     public void process() throws IOException {
         final MissingRecordAwareHSSFListener listener = new MissingRecordAwareHSSFListener(this);

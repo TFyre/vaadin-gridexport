@@ -11,7 +11,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 
 /**
  *
- * @author Francois Steyn - TFyreIT (PTY) LTD <tfyre@tfyre.co.za>
+ * @author Francois Steyn - TFyreIT (PTY) LTD {@literal <tfyre@tfyre.co.za>}
  * @param <T> the grid bean type
  */
 public interface GridHolder<T> extends Serializable {

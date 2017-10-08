@@ -36,7 +36,7 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
 
 /**
  *
- * @author Francois Steyn - TFyreIT (PTY) LTD <tfyre@tfyre.co.za>
+ * @author Francois Steyn - TFyreIT (PTY) LTD {@literal <tfyre@tfyre.co.za>}
  * @param <T> the grid bean type
  */
 public class ExcelExport<T> extends GridExport<T> {
@@ -307,7 +307,7 @@ public class ExcelExport<T> extends GridExport<T> {
      * setDataStyle(). For different data cells to have different CellStyles,
      * override getDataStyle().
      *
-     * @param sheetToAddTo
+     * @param sheetToAddTo the sheet to add to
      * @param row the row
      * @return the int
      */
@@ -344,8 +344,8 @@ public class ExcelExport<T> extends GridExport<T> {
      * or not. By default, all rows of the hierarchical containers are not
      * collapsed.
      *
-     * @param rootId
-     * @return
+     * @param rootId the root id
+     * @return the boolean
      */
     protected boolean collapseRowGroup(Object rootId) {
         return true;
@@ -357,7 +357,7 @@ public class ExcelExport<T> extends GridExport<T> {
      * data use setDataStyle(). For different data cells to have different
      * CellStyles, override getDataStyle().
      *
-     * @param sheetToAddTo
+     * @param sheetToAddTo the sheet to add to
      * @param row the row
      * @return the int
      */
@@ -380,7 +380,7 @@ public class ExcelExport<T> extends GridExport<T> {
     /**
      * Used by addHierarchicalDataRows() to implement the recursive calls.
      *
-     * @param sheetToAddTo
+     * @param sheetToAddTo the sheet to add to
      * @param rootItemId the root item id
      * @param row the row
      * @return the int
@@ -394,7 +394,7 @@ public class ExcelExport<T> extends GridExport<T> {
      * This method is ultimately used by either addDataRows() or
      * addHierarchicalDataRows() to actually add the data to the Sheet.
      *
-     * @param sheetToAddTo
+     * @param sheetToAddTo the sheet to add to
      * @param rootItemId the root item id
      * @param row the row
      */
@@ -457,11 +457,11 @@ public class ExcelExport<T> extends GridExport<T> {
      * are all potentially relevant items that may be used to determine what
      * formatting to return, that are not accessible globally.
      *
-     * @param propId
+     * @param propId the property id
      * @param rootItemId the root item id
      * @param row the row
      * @param col the col
-     * @param totalsRow
+     * @param totalsRow show totals row
      * @return the data style
      */
     protected CellStyle getCellStyle(final String propId, final Object rootItemId, final int row, final int col, final boolean totalsRow) {
