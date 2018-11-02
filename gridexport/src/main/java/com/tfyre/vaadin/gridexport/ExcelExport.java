@@ -240,17 +240,17 @@ public class ExcelExport<T> extends GridExport<T> {
         titleCell.setCellStyle(titleCellStyle);
         // cell borders don't work on merged ranges so, if there are borders
         // we apply them to the merged range here.
-        if (titleCellStyle.getBorderLeftEnum() != BorderStyle.NONE) {
-            RegionUtil.setBorderLeft(titleCellStyle.getBorderLeftEnum(), cra, sheet);
+        if (titleCellStyle.getBorderLeft() != BorderStyle.NONE) {
+            RegionUtil.setBorderLeft(titleCellStyle.getBorderLeft(), cra, sheet);
         }
-        if (titleCellStyle.getBorderRightEnum() != BorderStyle.NONE) {
-            RegionUtil.setBorderRight(titleCellStyle.getBorderRightEnum(), cra, sheet);
+        if (titleCellStyle.getBorderRight() != BorderStyle.NONE) {
+            RegionUtil.setBorderRight(titleCellStyle.getBorderRight(), cra, sheet);
         }
-        if (titleCellStyle.getBorderTopEnum() != BorderStyle.NONE) {
-            RegionUtil.setBorderTop(titleCellStyle.getBorderTopEnum(), cra, sheet);
+        if (titleCellStyle.getBorderTop() != BorderStyle.NONE) {
+            RegionUtil.setBorderTop(titleCellStyle.getBorderTop(), cra, sheet);
         }
-        if (titleCellStyle.getBorderBottomEnum() != BorderStyle.NONE) {
-            RegionUtil.setBorderBottom(titleCellStyle.getBorderBottomEnum(), cra, sheet);
+        if (titleCellStyle.getBorderBottom() != BorderStyle.NONE) {
+            RegionUtil.setBorderBottom(titleCellStyle.getBorderBottom(), cra, sheet);
         }
         return 1;
     }
@@ -576,7 +576,7 @@ public class ExcelExport<T> extends GridExport<T> {
              */
             for (final Row r : sheet) {
                 for (final Cell c : r) {
-                    if (c.getCellTypeEnum() == CellType.FORMULA) {
+                    if (c.getCellType() == CellType.FORMULA) {
                         evaluator.evaluateInCell(c);
                     }
                 }
