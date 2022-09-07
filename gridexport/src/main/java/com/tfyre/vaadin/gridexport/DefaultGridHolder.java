@@ -1,18 +1,14 @@
 package com.tfyre.vaadin.gridexport;
 
-import com.vaadin.data.ValueProvider;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import com.vaadin.data.provider.Query;
-import com.vaadin.server.Extension;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.Column;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.renderers.Renderer;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.function.ValueProvider;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 
 /**
@@ -22,16 +18,11 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
  */
 public class DefaultGridHolder<T> implements GridHolder<T> {
 
-    private static final long serialVersionUID = VersionHelper.serialVersionUID;
-
-    protected HorizontalAlignment defaultAlignment = HorizontalAlignment.LEFT;
-
-    private boolean hierarchical = false;
+    protected final HorizontalAlignment defaultAlignment = HorizontalAlignment.LEFT;
 
     private final Grid<T> grid;
-    private final Map<String, Column<T, ?>> columns = new HashMap<>();
-    private final Map<String, ValueProvider<T, ?>> valueProviders = new HashMap<>();
-    private final List<String> propIds = new ArrayList<>();
+    private final Map<String, ColumnDetail<T>> columns = new HashMap<>();
+    private final List<String> columnKeys = new ArrayList<>();
 
     public DefaultGridHolder(final Grid<T> grid) {
         this.grid = grid;
@@ -42,107 +33,58 @@ public class DefaultGridHolder<T> implements GridHolder<T> {
         return grid;
     }
 
-    @Override
-    public void hideColumn(final String propId) {
-        getPropIds().remove(propId);
+    public DefaultGridHolder<T> clearColumns() {
+        columnKeys.clear();
+        columns.clear();
+        return this;
+    }
+
+    public DefaultGridHolder<T> addColumn(final String key, final Grid.Column<T> column, final ValueProvider<T, ?> valueProvider, final String headerName,
+            final ValueType valueType) {
+        columnKeys.add(key);
+        columns.put(key, new ColumnDetail<>(key, column, valueProvider, headerName, valueType));
+        return this;
     }
 
     @Override
-    public List<String> getPropIds() {
-        if (propIds.isEmpty()) {
-            grid.getColumns().stream()
-                    .forEach(c -> {
-                        propIds.add(c.getCaption());
-                        columns.put(c.getCaption(), c);
-                    });
-        }
-        return propIds;
+    public List<String> getColumnKeys() {
+        return columnKeys;
     }
 
     @Override
-    public boolean isHierarchical() {
-        return hierarchical;
+    public HorizontalAlignment getCellAlignment(final String columnId) {
+        return getPropertyType(columnId).isNumeric() ? HorizontalAlignment.RIGHT : defaultAlignment;
     }
 
     @Override
-    final public void setHierarchical(final boolean hierarchical) {
-        this.hierarchical = hierarchical;
+    public String getColumnHeader(final String columnId) {
+        return columns.get(columnId).headerName();
+    }
+
+    protected Grid.Column<T> getColumn(final String columnId) {
+        return columns.get(columnId).column();
     }
 
     @Override
-    public HorizontalAlignment getCellAlignment(final String propId) {
-        final Renderer<?> renderer = getRenderer(propId);
-        if (renderer != null) {
-            if (ExcelExport.isNumeric(renderer.getPresentationType())) {
-                return HorizontalAlignment.RIGHT;
-            }
-        }
-        return defaultAlignment;
+    public ValueType getPropertyType(final String columnId) {
+        return columns.get(columnId).valueType();
     }
 
     @Override
-    public boolean isColumnCollapsed(final String propertyId) {
-        return getColumn(propertyId).isHidden();
+    public Object getPropertyValue(final T item, final String columnId) {
+        return columns.get(columnId).valueProvider().apply(item);
     }
 
     @Override
-    public UI getUI() {
-        return grid.getUI();
+    public List<T> getItems() {
+        return grid.getDataProvider().fetch(grid.getDataCommunicator().buildQuery(0, Integer.MAX_VALUE)).toList();
     }
 
-    @Override
-    public String getColumnHeader(final String propertyId) {
-        return getColumn(propertyId).getCaption();
-    }
+    private record ColumnDetail<S>(String key, Grid.
+    Column<S> column, ValueProvider<S,?>valueProvider,
+    String headerName, ValueType valueType)
+    {
 
-    protected Column<T, ?> getColumn(final String propId) {
-        return columns.get(propId);
-    }
-
-    protected Renderer<?> getRenderer(final String propId) {
-        // Grid.Column (as of 8.0.3) does not expose its renderer, we have to get it from extensions
-        final Column<T, ?> column = getColumn(propId);
-        if (column != null) {
-            for (Extension each : column.getExtensions()) {
-                if (each instanceof Renderer<?>) {
-                    return (Renderer<?>) each;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public Class<?> getPropertyType(final String propId) {
-        Renderer<?> renderer = getRenderer(propId);
-        if (renderer != null) {
-            return renderer.getPresentationType();
-        } else {
-            return String.class;
-        }
-    }
-
-    @Override
-    public void setColumnValueProvider(final String propId, final ValueProvider<T, ?> valueProvider) {
-        valueProviders.put(propId, valueProvider);
-    }
-
-    @Override
-    public Object getPropertyValue(final T itemId, final String propId) {
-        if (valueProviders.containsKey(propId)) {
-            return valueProviders.get(propId).apply(itemId);
-        }
-        return getColumn(propId).getValueProvider().apply(itemId);
-    }
-
-    @Override
-    public Collection<T> getItemIds() {
-        return grid.getDataProvider().fetch(new Query<>()).collect(Collectors.toList());
-    }
-
-    @Override
-    public Collection<T> getRootItemIds() {
-        return getItemIds();
     }
 
 }

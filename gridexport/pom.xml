@@ -4,22 +4,31 @@
     <parent>
         <groupId>com.tfyre</groupId>
         <artifactId>vaadin-gridexport-root</artifactId>
-        <version>1.0.2</version>
+        <version>2.0.0</version>
     </parent>
     <artifactId>vaadin-gridexport</artifactId>
     <packaging>jar</packaging>
     <name>vaadin-gridexport</name>
     <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-server</artifactId>
-            <version>8.14.1</version>
-            <scope>provided</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>4.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-data</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-grid-flow</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

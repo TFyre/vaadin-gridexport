@@ -20,16 +20,13 @@ import org.apache.poi.ss.util.RegionUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
@@ -39,9 +36,8 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
  * @author Francois Steyn - TFyreIT (PTY) LTD {@literal <tfyre@tfyre.co.za>}
  * @param <T> the grid bean type
  */
-public class ExcelExport<T> extends GridExport<T> {
+public class ExcelExport<T> implements GridExport<T> {
 
-    private static final long serialVersionUID = VersionHelper.serialVersionUID;
     private static final Logger LOGGER = Logger.getLogger(ExcelExport.class.getName());
 
     private String sheetName;
@@ -51,7 +47,6 @@ public class ExcelExport<T> extends GridExport<T> {
     private boolean rowHeaders = false;
     private final Workbook workbook;
     private Sheet sheet;
-    private Sheet hierarchicalTotalsSheet = null;
     private CreationHelper createHelper;
     private DataFormat dataFormat;
     private CellStyle dateCellStyle, doubleCellStyle, integerCellStyle, totalsDoubleCellStyle,
@@ -61,6 +56,7 @@ public class ExcelExport<T> extends GridExport<T> {
     private CellStyle rowHeaderCellStyle = null;
     private Row titleRow, headerRow, totalsRow;
     private final Map<Object, String> propertyExcelFormatMap = new HashMap<>();
+    private final GridHolder<T> gridHolder;
 
     public ExcelExport(final GridHolder<T> gridHolder) {
         this(gridHolder, null);
@@ -86,9 +82,14 @@ public class ExcelExport<T> extends GridExport<T> {
 
     public ExcelExport(final GridHolder<T> gridHolder, final Workbook wkbk, final String shtName,
             final String rptTitle, final String xptFileName, final boolean hasTotalsRow) {
-        super(gridHolder);
+        this.gridHolder = gridHolder;
         this.workbook = wkbk;
         init(shtName, rptTitle, xptFileName, hasTotalsRow);
+    }
+
+    @Override
+    public GridHolder<T> getGridHolder() {
+        return gridHolder;
     }
 
     private void init(final String shtName, final String rptTitle, final String xptFileName,
@@ -135,23 +136,8 @@ public class ExcelExport<T> extends GridExport<T> {
         this.titleCellStyle = defaultTitleCellStyle(this.workbook);
     }
 
-    /*
-     * This will exclude columns from the export that are not visible due to them being collapsed.
-     * This should be called before convertGrid() is called.
-     */
-    public void excludeCollapsedColumns() {
-        final Iterator<String> iterator = getPropIds().iterator();
-        while (iterator.hasNext()) {
-            final String propId = iterator.next();
-            if (getGridHolder().isColumnCollapsed(propId)) {
-                iterator.remove();
-            }
-        }
-    }
-
     /**
-     * Creates the workbook containing the exported grid data, without exporting
-     * it to the user.
+     * Creates the workbook containing the exported grid data, without exporting it to the user.
      */
     @Override
     public void convertGrid() {
@@ -168,11 +154,7 @@ public class ExcelExport<T> extends GridExport<T> {
         row++;
 
         // add data rows
-        if (isHierarchical()) {
-            row = addHierarchicalDataRows(sheet, row);
-        } else {
-            row = addDataRows(sheet, row);
-        }
+        row = addDataRows(sheet, row);
 
         // add totals row
         if (displayTotals) {
@@ -185,7 +167,6 @@ public class ExcelExport<T> extends GridExport<T> {
 
     @Override
     public InputStream getInputStream() {
-        excludeCollapsedColumns();
         convertGrid();
 
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -198,24 +179,18 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * Initial sheet setup. Override this method to specifically change initial,
-     * sheet-wide, settings.
+     * Initial sheet setup. Override this method to specifically change initial, sheet-wide, settings.
      */
     protected void initialSheetSetup() {
         final PrintSetup printSetup = sheet.getPrintSetup();
         printSetup.setLandscape(true);
         sheet.setFitToPage(true);
         sheet.setHorizontallyCenter(true);
-        if ((isHierarchical()) && (displayTotals)) {
-            hierarchicalTotalsSheet = workbook.createSheet("tempHts");
-        }
     }
 
     /**
-     * Adds the title row. Override this method to change title-related aspects
-     * of the workbook. Alternately, the title Row Object is accessible via
-     * getTitleRow() after report creation. To change title text use
-     * setReportTitle(). To change title CellStyle use setTitleStyle().
+     * Adds the title row. Override this method to change title-related aspects of the workbook. Alternately, the title Row Object is accessible via
+     * getTitleRow() after report creation. To change title text use setReportTitle(). To change title CellStyle use setTitleStyle().
      *
      * @return the int
      */
@@ -227,14 +202,15 @@ public class ExcelExport<T> extends GridExport<T> {
         titleRow.setHeightInPoints(45);
         final Cell titleCell;
         final CellRangeAddress cra;
+        final int size = gridHolder.getColumnKeys().size();
         if (rowHeaders) {
             titleCell = titleRow.createCell(1);
-            cra = new CellRangeAddress(0, 0, 1, getPropIds().size() - 1);
+            cra = new CellRangeAddress(0, 0, 1, size - 1);
             sheet.addMergedRegion(cra);
         } else {
             titleCell = titleRow.createCell(0);
-            cra = new CellRangeAddress(0, 0, 0, getPropIds().size() - 1);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, getPropIds().size() - 1));
+            cra = new CellRangeAddress(0, 0, 0, size - 1);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, size - 1));
         }
         titleCell.setCellValue(reportTitle);
         titleCell.setCellStyle(titleCellStyle);
@@ -256,10 +232,8 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * Adds the header row. Override this method to change header-row-related
-     * aspects of the workbook. Alternately, the header Row Object is accessible
-     * via getHeaderRow() after report creation. To change header CellStyle,
-     * though, use setHeaderStyle().
+     * Adds the header row. Override this method to change header-row-related aspects of the workbook. Alternately, the header Row Object is accessible via
+     * getHeaderRow() after report creation. To change header CellStyle, though, use setHeaderStyle().
      *
      * @param row the row
      */
@@ -268,25 +242,22 @@ public class ExcelExport<T> extends GridExport<T> {
         Cell headerCell;
         headerRow.setHeightInPoints(40);
         int col = 0;
-        for (final String propId : getPropIds()) {
+        for (final String columnKey : gridHolder.getColumnKeys()) {
             headerCell = headerRow.createCell(col);
-            headerCell.setCellValue(createHelper.createRichTextString(getGridHolder().getColumnHeader(propId)));
+            headerCell.setCellValue(createHelper.createRichTextString(getGridHolder().getColumnHeader(columnKey)));
             headerCell.setCellStyle(getColumnHeaderStyle(row, col));
 
-            final HorizontalAlignment poiAlignment = getGridHolder().getCellAlignment(propId);
+            final HorizontalAlignment poiAlignment = getGridHolder().getCellAlignment(columnKey);
             CellUtil.setAlignment(headerCell, poiAlignment);
             col++;
         }
     }
 
     /**
-     * This method is called by addTotalsRow() to determine what CellStyle to
-     * use. By default we just return totalsCellStyle which is either set to the
-     * default totals style, or can be overriden by the user using
-     * setTotalsStyle(). However, if the user wants to have different total
-     * items have different styles, then this method should be overriden. The
-     * parameters passed in are all potentially relevant items that may be used
-     * to determine what formatting to return, that are not accessible globally.
+     * This method is called by addTotalsRow() to determine what CellStyle to use. By default we just return totalsCellStyle which is either set to the default
+     * totals style, or can be overriden by the user using setTotalsStyle(). However, if the user wants to have different total items have different styles,
+     * then this method should be overriden. The parameters passed in are all potentially relevant items that may be used to determine what formatting to
+     * return, that are not accessible globally.
      *
      * @param row the row
      * @param col the current column
@@ -300,99 +271,23 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * For Hierarchical Containers, this method recursively adds root items and
-     * child items. The child items are appropriately grouped using
-     * grouping/outlining sheet functionality. Override this method to make any
-     * changes. To change the CellStyle used for all Grid data use
-     * setDataStyle(). For different data cells to have different CellStyles,
-     * override getDataStyle().
-     *
-     * @param sheetToAddTo the sheet to add to
-     * @param row the row
-     * @return the int
-     */
-    protected int addHierarchicalDataRows(final Sheet sheetToAddTo, final int row) {
-        final Collection<T> roots;
-        int localRow = row;
-        roots = getGridHolder().getRootItemIds();
-        /*
-         * For Hierarchical Containers, the outlining/grouping in the sheet is with the summary row
-         * at the top and the grouped/outlined subcategories below.
-         */
-        sheet.setRowSumsBelow(false);
-        int count = 0;
-        for (final T rootId : roots) {
-            count = addDataRowRecursively(sheetToAddTo, rootId, localRow);
-            // for totals purposes, we just want to add rootIds which contain totals
-            // so we store just the totals in a separate sheet.
-            if (displayTotals) {
-                addDataRow(hierarchicalTotalsSheet, rootId, localRow);
-            }
-            if (count > 1) {
-                sheet.groupRow(localRow + 1, (localRow + count) - 1);
-                if (collapseRowGroup(rootId)) {
-                    sheet.setRowGroupCollapsed(localRow + 1, true);
-                }
-            }
-            localRow = localRow + count;
-        }
-        return localRow;
-    }
-
-    /**
-     * Determines if a group rooted in object {@code rootId} should be collapsed
-     * or not. By default, all rows of the hierarchical containers are not
-     * collapsed.
-     *
-     * @param rootId the root id
-     * @return the boolean
-     */
-    protected boolean collapseRowGroup(Object rootId) {
-        return true;
-    }
-
-    /**
-     * this method adds row items for non-Hierarchical Containers. Override this
-     * method to make any changes. To change the CellStyle used for all Grid
-     * data use setDataStyle(). For different data cells to have different
-     * CellStyles, override getDataStyle().
+     * this method adds row items for non-Hierarchical Containers. Override this method to make any changes. To change the CellStyle used for all Grid data use
+     * setDataStyle(). For different data cells to have different CellStyles, override getDataStyle().
      *
      * @param sheetToAddTo the sheet to add to
      * @param row the row
      * @return the int
      */
     protected int addDataRows(final Sheet sheetToAddTo, final int row) {
-        final Collection<T> itemIds = getGridHolder().getItemIds();
-        int localRow = row;
-        int count = 0;
-        for (final T itemId : itemIds) {
-            addDataRow(sheetToAddTo, itemId, localRow);
-            count = 1;
-            if (count > 1) {
-                sheet.groupRow(localRow + 1, (localRow + count) - 1);
-                sheet.setRowGroupCollapsed(localRow + 1, true);
-            }
-            localRow = localRow + count;
-        }
-        return localRow;
+        final AtomicInteger localRow = new AtomicInteger(row);
+        getGridHolder().getItems().forEach(itemId -> {
+            addDataRow(sheetToAddTo, itemId, localRow.getAndIncrement());
+        });
+        return localRow.get();
     }
 
     /**
-     * Used by addHierarchicalDataRows() to implement the recursive calls.
-     *
-     * @param sheetToAddTo the sheet to add to
-     * @param rootItemId the root item id
-     * @param row the row
-     * @return the int
-     */
-    protected int addDataRowRecursively(final Sheet sheetToAddTo, final T rootItemId, final int row) {
-        addDataRow(sheetToAddTo, rootItemId, row);
-        return 1;
-    }
-
-    /**
-     * This method is ultimately used by either addDataRows() or
-     * addHierarchicalDataRows() to actually add the data to the Sheet.
+     * This method is ultimately used by either addDataRows() to actually add the data to the Sheet.
      *
      * @param sheetToAddTo the sheet to add to
      * @param rootItemId the root item id
@@ -400,35 +295,28 @@ public class ExcelExport<T> extends GridExport<T> {
      */
     protected void addDataRow(final Sheet sheetToAddTo, final T rootItemId, final int row) {
         final Row sheetRow = sheetToAddTo.createRow(row);
-        Object value;
-        Class<?> valueType;
-        Cell sheetCell;
         int col = 0;
-        for (final String propId : getPropIds()) {
-            value = getGridHolder().getPropertyValue(rootItemId, propId);
-            valueType = getGridHolder().getPropertyType(propId);
-            sheetCell = sheetRow.createCell(col);
-            setupCell(sheetCell, value, valueType, propId, rootItemId, row, col);
+        for (final String columnKey : gridHolder.getColumnKeys()) {
+            setupCell(sheetRow.createCell(col),
+                    getGridHolder().getPropertyValue(rootItemId, columnKey),
+                    columnKey, row, col);
             col++;
         }
     }
 
-    protected void setupCell(Cell sheetCell, Object value, Class<?> valueType, String propId, Object rootItemId, int row, int col) {
-        sheetCell.setCellStyle(getCellStyle(propId, rootItemId, row, col, false));
-        final HorizontalAlignment poiAlignment = getGridHolder().getCellAlignment(propId);
+    protected void setupCell(Cell sheetCell, Object value, String columnKey, int row, int col) {
+        sheetCell.setCellStyle(getCellStyle(columnKey, row, col, false));
+        final HorizontalAlignment poiAlignment = getGridHolder().getCellAlignment(columnKey);
         CellUtil.setAlignment(sheetCell, poiAlignment);
-        setCellValue(sheetCell, value, valueType, propId);
+        setCellValue(sheetCell, value, columnKey);
     }
 
-    protected void setCellValue(Cell sheetCell, Object value, Class<?> valueType, Object propId) {
+    protected void setCellValue(Cell sheetCell, Object value, String columnKey) {
         if (null != value) {
-            if (!isNumeric(valueType)) {
-                if (java.util.Date.class.isAssignableFrom(valueType)) {
-                    sheetCell.setCellValue((Date) value);
-                } else {
-                    sheetCell.setCellValue(createHelper.createRichTextString(value.toString()));
-                }
-            } else {
+            final ValueType valueType = getGridHolder().getPropertyType(columnKey);
+            if (valueType == ValueType.DATETIME) {
+                sheetCell.setCellValue((Date) value);
+            } else if (valueType.isNumeric()) {
                 try {
                     // parse all numbers as double, the format will determine how they appear
                     final Double d = Double.parseDouble(value.toString());
@@ -437,6 +325,8 @@ public class ExcelExport<T> extends GridExport<T> {
                     LOGGER.warning("NumberFormatException parsing a numeric value: " + nfe);
                     sheetCell.setCellValue(createHelper.createRichTextString(value.toString()));
                 }
+            } else {
+                sheetCell.setCellValue(createHelper.createRichTextString(value.toString()));
             }
         }
     }
@@ -449,22 +339,18 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * This method is called by addDataRow() to determine what CellStyle to use.
-     * By default we just return dataStyle which is either set to the default
-     * data style, or can be overriden by the user using setDataStyle().
-     * However, if the user wants to have different data items have different
-     * styles, then this method should be overriden. The parameters passed in
-     * are all potentially relevant items that may be used to determine what
-     * formatting to return, that are not accessible globally.
+     * This method is called by addDataRow() to determine what CellStyle to use. By default we just return dataStyle which is either set to the default data
+     * style, or can be overriden by the user using setDataStyle(). However, if the user wants to have different data items have different styles, then this
+     * method should be overriden. The parameters passed in are all potentially relevant items that may be used to determine what formatting to return, that are
+     * not accessible globally.
      *
-     * @param propId the property id
-     * @param rootItemId the root item id
+     * @param columnKey the property id
      * @param row the row
      * @param col the col
      * @param totalsRow show totals row
      * @return the data style
      */
-    protected CellStyle getCellStyle(final String propId, final Object rootItemId, final int row, final int col, final boolean totalsRow) {
+    protected CellStyle getCellStyle(final String columnKey, final int row, final int col, final boolean totalsRow) {
         // get the basic style for the type of cell (i.e. data, header, total)
         if ((rowHeaders) && (col == 0)) {
             if (null == rowHeaderCellStyle) {
@@ -472,23 +358,23 @@ public class ExcelExport<T> extends GridExport<T> {
             }
             return rowHeaderCellStyle;
         }
-        final Class<?> propType = getGridHolder().getPropertyType(propId);
+        final ValueType propType = getGridHolder().getPropertyType(columnKey);
         if (totalsRow) {
-            if (this.propertyExcelFormatMap.containsKey(propId)) {
-                final short df = dataFormat.getFormat(propertyExcelFormatMap.get(propId));
+            if (this.propertyExcelFormatMap.containsKey(columnKey)) {
+                final short df = dataFormat.getFormat(propertyExcelFormatMap.get(columnKey));
                 final CellStyle customTotalStyle = workbook.createCellStyle();
                 customTotalStyle.cloneStyleFrom(totalsDoubleCellStyle);
                 customTotalStyle.setDataFormat(df);
                 return customTotalStyle;
             }
-            if (isIntegerLongShortOrBigDecimal(propType)) {
+            if (propType == ValueType.INTEGERBASE) {
                 return totalsIntegerCellStyle;
             }
             return totalsDoubleCellStyle;
         }
         // Check if the user has over-ridden that data format of this property
-        if (this.propertyExcelFormatMap.containsKey(propId)) {
-            final short df = dataFormat.getFormat(propertyExcelFormatMap.get(propId));
+        if (this.propertyExcelFormatMap.containsKey(columnKey)) {
+            final short df = dataFormat.getFormat(propertyExcelFormatMap.get(columnKey));
             if (dataFormatCellStylesMap.containsKey(df)) {
                 return dataFormatCellStylesMap.get(df);
             }
@@ -501,26 +387,17 @@ public class ExcelExport<T> extends GridExport<T> {
             return retStyle;
         }
         // if not over-ridden, use the overall setting
-        if (isDoubleOrFloat(propType)) {
-            return dataFormatCellStylesMap.get(doubleDataFormat);
-        } else {
-            if (isIntegerLongShortOrBigDecimal(propType)) {
-                return dataFormatCellStylesMap.get(integerDataFormat);
-            } else {
-                if (java.util.Date.class.isAssignableFrom(propType)) {
-                    return dataFormatCellStylesMap.get(dateDataFormat);
-                }
-            }
-        }
-        return dataFormatCellStylesMap.get(doubleDataFormat);
+        return switch (propType) {
+            case INTEGERBASE -> dataFormatCellStylesMap.get(integerDataFormat);
+            case DATETIME -> dataFormatCellStylesMap.get(dateDataFormat);
+            default -> dataFormatCellStylesMap.get(doubleDataFormat);
+        };
     }
 
     /**
-     * Adds the totals row to the report. Override this method to make any
-     * changes. Alternately, the totals Row Object is accessible via
-     * getTotalsRow() after report creation. To change the CellStyle used for
-     * the totals row, use setFormulaStyle. For different totals cells to have
-     * different CellStyles, override getTotalsStyle().
+     * Adds the totals row to the report. Override this method to make any changes. Alternately, the totals Row Object is accessible via getTotalsRow() after
+     * report creation. To change the CellStyle used for the totals row, use setFormulaStyle. For different totals cells to have different CellStyles, override
+     * getTotalsStyle().
      *
      * @param currentRow the current row
      * @param startRow the start row
@@ -528,31 +405,20 @@ public class ExcelExport<T> extends GridExport<T> {
     protected void addTotalsRow(final int currentRow, final int startRow) {
         totalsRow = sheet.createRow(currentRow);
         totalsRow.setHeightInPoints(30);
-        Cell cell;
         int col = 0;
-        for (final String propId : getPropIds()) {
-            cell = totalsRow.createCell(col);
-            setupTotalCell(cell, propId, currentRow, startRow, col);
+        for (final String columnKey : gridHolder.getColumnKeys()) {
+            setupTotalCell(totalsRow.createCell(col), columnKey, currentRow, startRow, col);
             col++;
         }
     }
 
-    protected void setupTotalCell(Cell cell, final String propId, final int currentRow, final int startRow, int col) {
-        cell.setCellStyle(getCellStyle(propId, currentRow, startRow, col, true));
-        final HorizontalAlignment poiAlignment = getGridHolder().getCellAlignment(propId);
+    protected void setupTotalCell(Cell cell, final String columnKey, final int currentRow, final int startRow, int col) {
+        cell.setCellStyle(getCellStyle(columnKey, startRow, col, true));
+        final HorizontalAlignment poiAlignment = getGridHolder().getCellAlignment(columnKey);
         CellUtil.setAlignment(cell, poiAlignment);
-        Class<?> propType = getGridHolder().getPropertyType(propId);
-        if (isNumeric(propType)) {
+        if (getGridHolder().getPropertyType(columnKey).isNumeric()) {
             CellRangeAddress cra = new CellRangeAddress(startRow, currentRow - 1, col, col);
-            if (isHierarchical()) {
-                // 9 & 109 are for sum. 9 means include hidden cells, 109 means exclude.
-                // this will show the wrong value if the user expands an outlined category, so
-                // we will range value it first
-                cell.setCellFormula("SUM(" + cra.formatAsString(hierarchicalTotalsSheet.getSheetName(),
-                        true) + ")");
-            } else {
-                cell.setCellFormula("SUM(" + cra.formatAsString() + ")");
-            }
+            cell.setCellFormula("SUM(" + cra.formatAsString() + ")");
         } else {
             if (0 == col) {
                 cell.setCellValue(createHelper.createRichTextString("Total"));
@@ -561,42 +427,19 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * Final formatting of the sheet upon completion of writing the data. For
-     * example, we can only size the column widths once the data is in the
-     * report and the sheet knows how wide the data is.
+     * Final formatting of the sheet upon completion of writing the data. For example, we can only size the column widths once the data is in the report and the
+     * sheet knows how wide the data is.
      */
     protected void finalSheetFormat() {
         final FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-        if (isHierarchical()) {
-            /*
-             * evaluateInCell() is equivalent to paste special -> value. The formula refers to cells
-             * in the other sheet we are going to delete. We sum in the other sheet because if we
-             * summed in the main sheet, we would double count. Subtotal with hidden rows is not yet
-             * implemented in POI.
-             */
-            for (final Row r : sheet) {
-                for (final Cell c : r) {
-                    if (c.getCellType() == CellType.FORMULA) {
-                        evaluator.evaluateInCell(c);
-                    }
-                }
-            }
-            workbook.setActiveSheet(workbook.getSheetIndex(sheet));
-            if (hierarchicalTotalsSheet != null) {
-                workbook.removeSheetAt(workbook.getSheetIndex(hierarchicalTotalsSheet));
-            }
-        } else {
-            evaluator.evaluateAll();
-        }
-        for (int col = 0; col < getPropIds().size(); col++) {
+        evaluator.evaluateAll();
+        for (int col = 0; col < gridHolder.getColumnKeys().size(); col++) {
             sheet.autoSizeColumn(col);
         }
     }
 
     /**
-     * Returns the default title style. Obtained from:
-     * http://svn.apache.org/repos/asf/poi
-     * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
+     * Returns the default title style. Obtained from: http://svn.apache.org/repos/asf/poi /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
      * @return the cell style
@@ -614,8 +457,7 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * Returns the default header style. Obtained from:
-     * http://svn.apache.org/repos/asf/poi
+     * Returns the default header style. Obtained from: http://svn.apache.org/repos/asf/poi
      * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
@@ -637,16 +479,14 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * Returns the default data cell style. Obtained from:
-     * http://svn.apache.org/repos/asf/poi
+     * Returns the default data cell style. Obtained from: http://svn.apache.org/repos/asf/poi
      * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
      * @return the cell style
      */
     protected CellStyle defaultDataCellStyle(final Workbook wb) {
-        CellStyle style;
-        style = wb.createCellStyle();
+        final CellStyle style = wb.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setWrapText(true);
         style.setBorderRight(BorderStyle.THIN);
@@ -662,16 +502,14 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * Returns the default totals row style for Double data. Obtained from:
-     * http://svn.apache.org/repos/asf/poi
+     * Returns the default totals row style for Double data. Obtained from: http://svn.apache.org/repos/asf/poi
      * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
      * @return the cell style
      */
     protected CellStyle defaultTotalsDoubleCellStyle(final Workbook wb) {
-        CellStyle style;
-        style = wb.createCellStyle();
+        final CellStyle style = wb.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
         style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
@@ -681,16 +519,14 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * Returns the default totals row style for Integer data. Obtained from:
-     * http://svn.apache.org/repos/asf/poi
+     * Returns the default totals row style for Integer data. Obtained from: http://svn.apache.org/repos/asf/poi
      * /trunk/src/examples/src/org/apache/poi/ss/examples/TimesheetDemo.java
      *
      * @param wb the wb
      * @return the cell style
      */
     protected CellStyle defaultTotalsIntegerCellStyle(final Workbook wb) {
-        CellStyle style;
-        style = wb.createCellStyle();
+        final CellStyle style = wb.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
         style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
@@ -751,66 +587,6 @@ public class ExcelExport<T> extends GridExport<T> {
             dateCellStyle.setDataFormat(dateDataFormat);
             dataFormatCellStylesMap.put(dateDataFormat, dateCellStyle);
         }
-    }
-
-    /**
-     * Utility method to determine whether value being put in the Cell is
-     * numeric.
-     *
-     * @param type the type
-     * @return true, if is numeric
-     */
-    public static boolean isNumeric(final Class<?> type) {
-        if (isIntegerLongShortOrBigDecimal(type)) {
-            return true;
-        }
-        if (isDoubleOrFloat(type)) {
-            return true;
-        }
-        if (Number.class.equals(type)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Utility method to determine whether value being put in the Cell is
-     * integer-like type.
-     *
-     * @param type the type
-     * @return true, if is integer-like
-     */
-    public static boolean isIntegerLongShortOrBigDecimal(final Class<?> type) {
-        if ((Integer.class.equals(type) || (int.class.equals(type)))) {
-            return true;
-        }
-        if ((Long.class.equals(type) || (long.class.equals(type)))) {
-            return true;
-        }
-        if ((Short.class.equals(type)) || (short.class.equals(type))) {
-            return true;
-        }
-        if ((BigDecimal.class.equals(type)) || (BigDecimal.class.equals(type))) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Utility method to determine whether value being put in the Cell is
-     * double-like type.
-     *
-     * @param type the type
-     * @return true, if is double-like
-     */
-    public static boolean isDoubleOrFloat(final Class<?> type) {
-        if ((Double.class.equals(type)) || (double.class.equals(type))) {
-            return true;
-        }
-        if ((Float.class.equals(type)) || (float.class.equals(type))) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -1025,8 +801,7 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * Sets the flag indicating whether a totals row will be added to the report
-     * or not.
+     * Sets the flag indicating whether a totals row will be added to the report or not.
      *
      * @param displayTotals boolean
      */
@@ -1035,8 +810,7 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * See value of flag indicating whether the first column should be treated
-     * as row headers.
+     * See value of flag indicating whether the first column should be treated as row headers.
      *
      * @return boolean
      */
@@ -1054,8 +828,7 @@ public class ExcelExport<T> extends GridExport<T> {
     }
 
     /**
-     * Set value of flag indicating whether the first column should be treated
-     * as row headers.
+     * Set value of flag indicating whether the first column should be treated as row headers.
      *
      * @param rowHeaders boolean
      */
