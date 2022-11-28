@@ -13,7 +13,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-server</artifactId>
-            <version>8.17.0</version>
+            <version>8.18.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
