@@ -1,14 +1,12 @@
 package com.tfyre.vaadin.gridexport;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.ValueProvider;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 
 /**
@@ -48,7 +46,7 @@ public class DefaultGridHolder<T> implements GridHolder<T> {
 
     @Override
     public List<String> getColumnKeys() {
-        return columnKeys;
+        return Collections.unmodifiableList(columnKeys);
     }
 
     @Override
