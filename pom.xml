@@ -11,11 +11,11 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
         <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
-        <vaadin.version>23.2.0</vaadin.version>
-        <poi.version>5.2.2</poi.version>
+        <vaadin.version>23.3.1</vaadin.version>
+        <poi.version>5.2.3</poi.version>
     </properties>
     <name>vaadin-gridexport Add-on Root</name>
-    <description>Grid Export add-on for Vaadin 8</description>
+    <description>Grid Export add-on for Vaadin 23</description>
     <url>https://github.com/TFyre/vaadin-gridexport</url>
     <licenses>
         <license>
