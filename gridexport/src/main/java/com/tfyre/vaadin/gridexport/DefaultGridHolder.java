@@ -78,10 +78,7 @@ public class DefaultGridHolder<T> implements GridHolder<T> {
         return grid.getDataProvider().fetch(grid.getDataCommunicator().buildQuery(0, Integer.MAX_VALUE)).toList();
     }
 
-    private record ColumnDetail<S>(String key, Grid.
-    Column<S> column, ValueProvider<S,?>valueProvider,
-    String headerName, ValueType valueType)
-    {
+    private record ColumnDetail<S>(String key, Grid.Column<S> column, ValueProvider<S, ?> valueProvider, String headerName, ValueType valueType) {
 
     }
 
