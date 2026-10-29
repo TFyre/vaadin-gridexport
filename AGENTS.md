@@ -13,13 +13,14 @@ Run from the repository root (no Maven wrapper; use system `mvn`):
 ```bash
 mvn clean install                 # full build (root POM + gridexport module)
 mvn -pl gridexport compile        # compile only the add-on module
-mvn test                          # tests — note: src/test/java currently contains no tests
-mvn -pl gridexport test -Dtest=ClassName   # run a single test once tests exist
+mvn test                          # run the JUnit 5 unit tests
+mvn -pl gridexport test -Dtest=ClassName   # run a single test class
 mvn -Prelease deploy              # release: GPG-sign, attach sources/javadoc, stage to OSSRH
 ```
 
 - Java 25 LTS (`maven.compiler.release=25`); Vaadin 25 requires Java 21+, but this project targets 25. The compiler runs with `-Xlint:all` (all warnings surfaced, `path` excluded).
-- Versions live in the root [pom.xml](pom.xml): Vaadin 25.3.4 (`vaadin-bom`), POI 6.0.0.
+- Versions live in the root [pom.xml](pom.xml): Vaadin 25.3.4 (`vaadin-bom`), POI 6.0.0, JUnit Jupiter 5.13.4.
+- **Version management belongs in the parent POM**: add the version as a `<properties>` entry in the root [pom.xml](pom.xml) and a matching `<dependencyManagement>` entry there. Module POMs declare dependencies without a `<version>` (and without their own version properties); never pin a version in a child POM.
 - All library dependencies (POI, `flow-server`, `flow-data`, `vaadin-grid-flow`) are `provided` — consumers supply them; do not change to compile scope.
 
 ## Architecture
