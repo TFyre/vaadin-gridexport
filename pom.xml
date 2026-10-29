@@ -67,12 +67,12 @@
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                     <showDeprecation>true</showDeprecation>
-                    <compilerArguments>
-                        <Xmaxerrs>1000</Xmaxerrs>
-                        <Xlint:all/>
-                        <Xlint:-path/>
-                        <!--                        <Averbose>true</Averbose>-->
-                    </compilerArguments>
+                    <compilerArgs>
+                        <arg>-Xmaxerrs</arg>
+                        <arg>1000</arg>
+                        <arg>-Xlint:all</arg>
+                        <arg>-Xlint:-path</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
