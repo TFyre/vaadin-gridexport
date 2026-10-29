@@ -7,11 +7,11 @@
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.release>25</maven.compiler.release>
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
-        <vaadin.version>23.3.1</vaadin.version>
+        <vaadin.version>25.3.4</vaadin.version>
         <poi.version>5.2.3</poi.version>
     </properties>
     <name>vaadin-gridexport Add-on Root</name>
