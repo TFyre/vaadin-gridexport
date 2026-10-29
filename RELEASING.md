@@ -27,17 +27,17 @@ maintainer reviews the validated deployment in the Portal and publishes it manua
 
 3. **Verified namespace** — the `com.tfyre` namespace must be verified in the Portal
    (account → Namespaces).
-4. **Clean working tree** on `master` at the commit to release, with the POM version already set
+4. **Clean working tree** on `main` at the commit to release, with the POM version already set
    to the release version (no `-SNAPSHOT`).
 
 > Never commit tokens or GPG secrets. Keep `settings.xml` outside the repository.
 
 ## Release steps
 
-1. Update `master`, then create and push an annotated tag whose name matches the POM version:
+1. Update `main`, then create and push an annotated tag whose name matches the POM version:
 
    ```bash
-   git checkout master
+   git checkout main
    git pull
    git tag -a v3.0.0 -m "Release 3.0.0"
    git push origin v3.0.0
