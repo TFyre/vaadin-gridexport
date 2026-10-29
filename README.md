@@ -1,6 +1,6 @@
-# vaadin-gridexport Add-on for Vaadin 23
+# vaadin-gridexport Add-on for Vaadin 25
 
-GridExport is a Data Component add-on for Vaadin 23.
+GridExport is a Data Component add-on for Vaadin 25.
 
 ## Authors
 
@@ -9,7 +9,8 @@ GridExport is a Data Component add-on for Vaadin 23.
 
 ## Overview
 
-* This add-on requires the Vaadin 23 library.
+* This add-on requires the Vaadin 25 library.
+* This add-on requires Java 25 (LTS) or newer.
 * This add-on requires the Apache POI library.
 
 ## Usage

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-`vaadin-gridexport` is a Vaadin 23 add-on that exports the contents of a Vaadin `Grid` to an Excel workbook (Apache POI). It is a small library published to Maven Central, not an application.
+`vaadin-gridexport` is a Vaadin 25 add-on that exports the contents of a Vaadin `Grid` to an Excel workbook (Apache POI). It is a small library published to Maven Central, not an application.
 
 ## Build & test commands
 
@@ -18,8 +18,8 @@ mvn -pl gridexport test -Dtest=ClassName   # run a single test once tests exist
 mvn -Prelease deploy              # release: GPG-sign, attach sources/javadoc, stage to OSSRH
 ```
 
-- Java 17 (`maven.compiler.release=17`) even though newer JDKs are installed; compiler runs with `-Xlint:all` (all warnings surfaced, `path` excluded).
-- Versions live in the root [pom.xml](pom.xml): Vaadin 23.3.1 (`vaadin-bom`), POI 5.2.3.
+- Java 25 LTS (`maven.compiler.release=25`); Vaadin 25 requires Java 21+, but this project targets 25. The compiler runs with `-Xlint:all` (all warnings surfaced, `path` excluded).
+- Versions live in the root [pom.xml](pom.xml): Vaadin 25.3.4 (`vaadin-bom`), POI 5.2.3.
 - All library dependencies (POI, `flow-server`, `flow-data`, `vaadin-grid-flow`) are `provided` — consumers supply them; do not change to compile scope.
 
 ## Architecture
