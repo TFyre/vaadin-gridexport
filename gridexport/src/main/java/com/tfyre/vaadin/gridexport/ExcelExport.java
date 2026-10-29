@@ -80,6 +80,9 @@ public class ExcelExport<T> implements GridExport<T> {
         this(gridHolder, new HSSFWorkbook(), sheetName, reportTitle, exportFileName, hasTotalsRow);
     }
 
+    // init() calls the overridable default*CellStyle/default*DataFormat factories so subclasses
+    // can customize styling; that escape is intentional and keeps the protected extension API intact.
+    @SuppressWarnings("this-escape")
     public ExcelExport(final GridHolder<T> gridHolder, final Workbook wkbk, final String shtName,
             final String rptTitle, final String xptFileName, final boolean hasTotalsRow) {
         this.gridHolder = gridHolder;

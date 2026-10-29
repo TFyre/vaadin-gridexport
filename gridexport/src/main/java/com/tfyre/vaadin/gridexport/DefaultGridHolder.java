@@ -1,6 +1,8 @@
 package com.tfyre.vaadin.gridexport;
 
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.ValueProvider;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,7 +77,11 @@ public class DefaultGridHolder<T> implements GridHolder<T> {
 
     @Override
     public List<T> getItems() {
-        return grid.getDataProvider().fetch(grid.getDataCommunicator().buildQuery(0, Integer.MAX_VALUE)).toList();
+        @SuppressWarnings("unchecked")
+        final DataProvider<T, Object> dataProvider = (DataProvider<T, Object>) grid.getDataProvider();
+        @SuppressWarnings("unchecked")
+        final Query<T, Object> query = (Query<T, Object>) grid.getDataCommunicator().buildQuery(0, Integer.MAX_VALUE);
+        return dataProvider.fetch(query).toList();
     }
 
     private record ColumnDetail<S>(String key, Grid.Column<S> column, ValueProvider<S, ?> valueProvider, String headerName, ValueType valueType) {
