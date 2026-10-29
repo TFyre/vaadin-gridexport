@@ -53,7 +53,7 @@ new FileDownloader(new StreamResource(() -> {
 
 ## Git & GitHub conventions
 
-- The default branch is `master`.
+- The default branch is `main`.
 - Use the `git` CLI for all local git work (status, diff, log, fetch, commit, branch, merge).
 - For GitHub operations — pull requests, issues, repository/release lookups — use the MCP GitHub tools, **not** the `gh` CLI.
 - Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `<type>(<scope>): <subject>` in the imperative mood. Examples: `feat(export): allow a custom Workbook`, `fix: handle null cell values`, `docs: add usage notes`, `chore(deps): bump Vaadin to 25.3.4`. Common types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
