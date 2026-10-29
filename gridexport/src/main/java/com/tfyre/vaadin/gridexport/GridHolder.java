@@ -1,11 +1,6 @@
 package com.tfyre.vaadin.gridexport;
 
-import com.vaadin.data.ValueProvider;
-import com.vaadin.ui.Grid;
-import java.io.Serializable;
-import java.util.Collection;
-
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.grid.Grid;
 import java.util.List;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 
@@ -14,34 +9,20 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
  * @author Francois Steyn - TFyreIT (PTY) LTD {@literal <tfyre@tfyre.co.za>}
  * @param <T> the grid bean type
  */
-public interface GridHolder<T> extends Serializable {
+public interface GridHolder<T>  {
 
     Grid<T> getGrid();
 
-    void hideColumn(final String propId);
+    List<String> getColumnKeys();
 
-    List<String> getPropIds();
+    HorizontalAlignment getCellAlignment(final String columnId);
 
-    boolean isHierarchical();
+    String getColumnHeader(final String columnId);
 
-    void setHierarchical(final boolean hierarchical);
+    abstract ValueType getPropertyType(final String columnId);
 
-    HorizontalAlignment getCellAlignment(String propId);
+    abstract Object getPropertyValue(T itemId, final String columnId);
 
-    // grid delegated methods
-    boolean isColumnCollapsed(String propertyId);
+    abstract List<T> getItems();
 
-    UI getUI();
-
-    String getColumnHeader(String propertyId);
-
-    abstract Class<?> getPropertyType(String propId);
-
-    abstract Object getPropertyValue(T itemId, String propId);
-
-    abstract void setColumnValueProvider(String propId, ValueProvider<T, ?> valueProvider);
-
-    abstract Collection<T> getItemIds();
-
-    abstract Collection<T> getRootItemIds();
 }
