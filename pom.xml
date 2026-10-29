@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.tfyre</groupId>
     <artifactId>vaadin-gridexport-root</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -12,10 +12,10 @@
         <maven.compiler.release>25</maven.compiler.release>
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <vaadin.version>25.3.4</vaadin.version>
-        <poi.version>5.2.3</poi.version>
+        <poi.version>6.0.0</poi.version>
     </properties>
     <name>vaadin-gridexport Add-on Root</name>
-    <description>Grid Export add-on for Vaadin 23</description>
+    <description>Grid Export add-on for Vaadin 25</description>
     <url>https://github.com/TFyre/vaadin-gridexport</url>
     <licenses>
         <license>
